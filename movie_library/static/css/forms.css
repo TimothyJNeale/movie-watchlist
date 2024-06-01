@@ -1,0 +1,26 @@
+.form {
+    margin: 0 auto;
+    max-width: 30rem;
+    border: var(--border);
+    font-size: 1.2rem;
+
+    background: var(--background-color);
+
+    box-shadow: 0.75rem 0.75rem 0 -0.2rem var(--accent-colour);
+}
+
+.form__container {
+    padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+}
+
+@media screen and (min-width: 50em) {
+    .form__container {
+        padding-left: 2rem;
+    }
+}
+
+@media screen and (min-width: 80em) {
+    .form__container {
+        padding-left: 3rem;
+    }
+}
