@@ -12,9 +12,13 @@ pages = Blueprint(
 
 @pages.route("/")
 def index():
+    movie_data = current_app.db.movie.find({})
+    movies = [Movie(**movie) for movie in movie_data]
+    # print(movies)
     return render_template(
         "index.html",
         title="Movies Watchlist",
+        movies_data=movies
     )
 
 @pages.route("/add", methods=["GET", "POST"])
