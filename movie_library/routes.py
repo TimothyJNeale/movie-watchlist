@@ -45,7 +45,6 @@ def add_movie():
 def edit_movie(_id: str):
     movie_data = current_app.db.movie.find_one({"_id": _id})
     movie = Movie(**movie_data)
-    print(movie)
     form = ExtendedMovieForm(obj=movie)
 
     if form.validate_on_submit():
@@ -57,8 +56,6 @@ def edit_movie(_id: str):
         movie.tags = form.tags.data
         movie.description = form.description.data
         movie.video_link = form.video_link.data
-
-        print(asdict(movie))
 
         current_app.db.movie.update_one({"_id": movie._id}, {"$set": asdict(movie)})
         return redirect(url_for(".movie", _id=movie._id))
