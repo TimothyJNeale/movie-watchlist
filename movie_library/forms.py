@@ -24,7 +24,7 @@ class StringListField(TextAreaField):
             self.data = []
 
 
-class ExtendMovieForm(MovieForm):
+class ExtendedMovieForm(MovieForm):
     cast = StringListField("Cast")
     series = StringField("Series")
     tags = StringListField("Tags")

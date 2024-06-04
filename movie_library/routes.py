@@ -3,7 +3,7 @@ import datetime
 
 from flask import Blueprint, render_template, session, redirect, request, current_app, url_for
 from movie_library.models import Movie
-from movie_library.forms import MovieForm
+from movie_library.forms import ExtendedMovieForm, MovieForm
 from dataclasses import asdict
 
 pages = Blueprint(
@@ -40,6 +40,28 @@ def add_movie():
     return render_template("new_movie.html", 
                            title="Movies Watchlist - Add Movie", 
                            form=form)
+
+@pages.route("/edit/<string:_id>", methods=["GET", "POST"])
+def edit_movie(_id: str):
+    movie_data = current_app.db.movie.find_one({"_id": _id})
+    movie = Movie(**movie_data)
+    form = ExtendedMovieForm(obj=movie)
+
+    if form.validate_on_submit():
+            movie.title = form.title.data
+            movie.director = form.director.data
+            movie.year = form.year.data
+            movie.cast = form.cast.data
+            movie.series = form.series.data
+            movie.tags = form.tags.data
+            movie.description = form.description.data
+            movie.video_link = form.video_link.data
+
+            current_app.db.movie.update_one({"id": movie._id}, {"$set": asdict(movie)})
+            return redirect(url_for(".movie", _id=movie._id))
+
+    return render_template("movie_form.html", movie=movie, form=form)
+
 
 @pages.get("/movie/<string:_id>")
 def movie(_id: str):
