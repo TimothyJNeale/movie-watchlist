@@ -1,14 +1,14 @@
 import uuid
+import datetime
+
 from flask import Blueprint, render_template, session, redirect, request, current_app, url_for
 from movie_library.models import Movie
 from movie_library.forms import MovieForm
 from dataclasses import asdict
 
-
 pages = Blueprint(
     "pages", __name__, template_folder="templates", static_folder="static"
 )
-
 
 @pages.route("/")
 def index():
@@ -51,6 +51,12 @@ def movie(_id: str):
 def rate_movie(_id: str):
     rating = int(request.args.get("rating"))
     current_app.db.movie.update_one({"_id": _id}, {"$set": {"rating": rating}})
+
+    return redirect(url_for(".movie", _id=_id))
+
+@pages.get("/movie/<string:_id>/watch")
+def watch_today(_id: str):
+    current_app.db.movie.update_one({"_id": _id}, {"$set": {"last_watched": datetime.datetime.today()}})
 
     return redirect(url_for(".movie", _id=_id))
 
