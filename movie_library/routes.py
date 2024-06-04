@@ -45,20 +45,23 @@ def add_movie():
 def edit_movie(_id: str):
     movie_data = current_app.db.movie.find_one({"_id": _id})
     movie = Movie(**movie_data)
+    print(movie)
     form = ExtendedMovieForm(obj=movie)
 
     if form.validate_on_submit():
-            movie.title = form.title.data
-            movie.director = form.director.data
-            movie.year = form.year.data
-            movie.cast = form.cast.data
-            movie.series = form.series.data
-            movie.tags = form.tags.data
-            movie.description = form.description.data
-            movie.video_link = form.video_link.data
+        movie.title = form.title.data
+        movie.director = form.director.data
+        movie.year = form.year.data
+        movie.cast = form.cast.data
+        movie.series = form.series.data
+        movie.tags = form.tags.data
+        movie.description = form.description.data
+        movie.video_link = form.video_link.data
 
-            current_app.db.movie.update_one({"id": movie._id}, {"$set": asdict(movie)})
-            return redirect(url_for(".movie", _id=movie._id))
+        print(asdict(movie))
+
+        current_app.db.movie.update_one({"_id": movie._id}, {"$set": asdict(movie)})
+        return redirect(url_for(".movie", _id=movie._id))
 
     return render_template("movie_form.html", movie=movie, form=form)
 
@@ -89,8 +92,5 @@ def toggle_theme():
         session["theme"] = "light"
     else:
         session["theme"] = "dark"
-
-    print(session.get("theme"))
-    print(request.args.get("current_page"))
     
     return redirect(request.args.get("current_page"))

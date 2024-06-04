@@ -26,7 +26,7 @@ class StringListField(TextAreaField):
 
 class ExtendedMovieForm(MovieForm):
     cast = StringListField("Cast")
-    series = StringField("Series")
+    series = StringListField("Series")
     tags = StringListField("Tags")
     description = TextAreaField("Description")
     video_link = URLField("Video Link")
