@@ -1,6 +1,6 @@
 import uuid
 import datetime
-
+import functools
 from flask import (
     Blueprint, 
     render_template, 
@@ -25,9 +25,24 @@ pages = Blueprint(
     "pages", __name__, template_folder="templates", static_folder="static"
 )
 
+def login_required(route):
+    @functools.wraps(route)
+    def route_wrapper(*args, **kwargs):
+        if session.get("email") is None:
+            return redirect(url_for(".login"))
+
+        return route(*args, **kwargs)
+
+    return route_wrapper
+
+
 @pages.route("/")
+@login_required
 def index():
-    movie_data = current_app.db.movie.find({})
+    user_data = current_app.db.user.find_one({"email": session["email"]})
+    user = User(**user_data)
+    
+    movie_data = current_app.db.movie.find({"_id": {"$in": user.movies}})
     movies = [Movie(**movie) for movie in movie_data]
     # print(movies)
     return render_template(
@@ -83,6 +98,7 @@ def login():
 
 
 @pages.route("/add", methods=["GET", "POST"])
+@login_required
 def add_movie():
     form = MovieForm()
     
@@ -95,6 +111,10 @@ def add_movie():
         )
 
         current_app.db.movie.insert_one(asdict(movie))
+        current_app.db.user.update_one(
+            {"_id": session["user_id"]},
+            {"$push": {"movies": movie._id}}
+        )
 
         return redirect(url_for(".index"))
 
@@ -103,6 +123,7 @@ def add_movie():
                            form=form)
 
 @pages.route("/edit/<string:_id>", methods=["GET", "POST"])
+@login_required
 def edit_movie(_id: str):
     movie_data = current_app.db.movie.find_one({"_id": _id})
     movie = Movie(**movie_data)
@@ -131,6 +152,7 @@ def movie(_id: str):
     return render_template("movie_details.html", movie=movie)
 
 @pages.get("/movie/<string:_id>/rate")
+@login_required
 def rate_movie(_id: str):
     rating = int(request.args.get("rating"))
     current_app.db.movie.update_one({"_id": _id}, {"$set": {"rating": rating}})
@@ -138,6 +160,7 @@ def rate_movie(_id: str):
     return redirect(url_for(".movie", _id=_id))
 
 @pages.get("/movie/<string:_id>/watch")
+@login_required
 def watch_today(_id: str):
     current_app.db.movie.update_one({"_id": _id}, {"$set": {"last_watched": datetime.datetime.today()}})
 
