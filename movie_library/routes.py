@@ -12,7 +12,12 @@ from flask import (
     flash
 )
 from movie_library.models import Movie, User
-from movie_library.forms import ExtendedMovieForm, MovieForm, RegisterForm
+from movie_library.forms import (
+    ExtendedMovieForm, 
+    MovieForm, 
+    RegisterForm, 
+    LoginForm
+)
 from dataclasses import asdict
 from passlib.hash import pbkdf2_sha256
 
@@ -48,9 +53,34 @@ def register():
         current_app.db.user.insert_one(asdict(user))
         flash("User registration successful", "success")
 
-        return redirect(url_for(".index"))
+        return redirect(url_for(".login"))
 
     return render_template("register.html", title="Movies Watchlist - Register", form=form)
+
+@pages.route("/login", methods=["GET", "POST"])
+def login():
+    if session.get("email"):
+        return redirect(url_for(".index"))
+    
+    form = LoginForm()
+    if form.validate_on_submit():
+        user_data = current_app.db.user.find_one({"email": form.email.data})
+        if not user_data:
+            flash("User credentials incorrect", "danger")
+            return redirect(url_for(".login"))
+        
+        user = User(**user_data)
+        if user and pbkdf2_sha256.verify(form.password.data, user.password):
+            session["email"] = user.email
+            session["user_id"] = user._id
+
+            flash("Login successful", "success")
+            return redirect(url_for(".index"))
+        
+        flash("User credentials incorrect", "danger")
+
+    return render_template("login.html", title="Movies Watchlist - Login", form=form)
+
 
 @pages.route("/add", methods=["GET", "POST"])
 def add_movie():
