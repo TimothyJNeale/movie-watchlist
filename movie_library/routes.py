@@ -41,7 +41,7 @@ def login_required(route):
 def index():
     user_data = current_app.db.user.find_one({"email": session["email"]})
     user = User(**user_data)
-    
+
     movie_data = current_app.db.movie.find({"_id": {"$in": user.movies}})
     movies = [Movie(**movie) for movie in movie_data]
     # print(movies)
@@ -96,6 +96,13 @@ def login():
 
     return render_template("login.html", title="Movies Watchlist - Login", form=form)
 
+@pages.route("/logout")
+def logout():
+    current_theme = session.get("theme")
+    session.clear()
+    session["theme"] = current_theme
+    
+    return redirect(url_for(".login"))
 
 @pages.route("/add", methods=["GET", "POST"])
 @login_required
